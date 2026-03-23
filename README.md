@@ -106,3 +106,38 @@ Database drivers for MySQL, Postgres, Microsoft SQL Server, MongoDB, and Redis a
 
 To connect to an Oracle database, you will need to download the appropriate driver (e.g. from http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html). Then make a `libs` directory in the `spring-music` project, and move the driver, `ojdbc7.jar` or `ojdbc8.jar`, into the `libs` directory.
 In `build.gradle`, uncomment the line `compile files('libs/ojdbc8.jar')` or `compile files('libs/ojdbc7.jar')` and run `./gradle assemble`
+
+# Team <name>
+
+## Participants
+- Raghunandan Narayan
+- Aghilan Maheswaran
+- Kavya Sreesan
+- Archana J R Jayaram
+- Ronith Ravi
+
+## Scenario
+Scenario <1>: Code Modernization
+
+## What We Built
+2-3 paragraphs. What exists in this repo that didn't exist 3 hours ago.
+What runs, what's scaffolding, what's faked.
+
+## Challenges Attempted
+| # | Challenge | Status | Notes |
+|---|---|---|---|
+| 1 | The <name> | done / partial / skipped | |
+| 2 | | | |
+
+## Key Decisions
+Biggest calls you made and why. Link into `/decisions` for the full ADRs.
+
+## How to Run It
+Exact commands. Assume the reader has Docker and nothing else.
+
+## If We Had Another Day
+What you'd tackle next, in priority order. Be honest about what's held
+together with tape.
+
+## How We Used Claude Code
+What worked. What surprised you. Where it saved the most time.
