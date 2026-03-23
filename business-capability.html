@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring Music — Album Catalog Management</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      line-height: 1.65;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%);
+      border-bottom: 1px solid #2d3748;
+      padding: 2rem 3rem;
+    }
+    header .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4a5568;
+      margin-bottom: 0.4rem;
+    }
+    header h1 { font-size: 1.75rem; font-weight: 700; color: #63b3ed; letter-spacing: -0.5px; }
+    header p  { color: #718096; font-size: 0.88rem; margin-top: 0.3rem; }
+
+    /* ── Nav pills ── */
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 1.25rem 3rem;
+      background: #111520;
+      border-bottom: 1px solid #1e2535;
+    }
+    .toc a {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #4a5568;
+      text-decoration: none;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid #2d3748;
+      border-radius: 20px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .toc a:hover { color: #63b3ed; border-color: #63b3ed; }
+
+    /* ── Layout ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+    section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #1e2535;
+    }
+    .section-num {
+      background: #1a1f2e;
+      border: 1px solid #2d3748;
+      color: #63b3ed;
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .section-header .tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #1a1f2e;
+      border: 1px solid #2d3748;
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    /* ── Capability block ── */
+    .capability-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .capability-grid { grid-template-columns: 1fr; } }
+
+    .cap-card {
+      background: #111520;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+    .cap-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4a5568;
+      margin-bottom: 0.5rem;
+    }
+    .cap-value { font-size: 0.9rem; font-weight: 600; color: #e2e8f0; margin-bottom: 0.4rem; }
+    .cap-desc  { font-size: 0.82rem; color: #a0aec0; }
+
+    /* ── User Story ── */
+    .story-block {
+      background: #111520;
+      border-left: 3px solid #63b3ed;
+      border-radius: 0 8px 8px 0;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.88rem;
+    }
+    .story-block .as-a   { color: #63b3ed; }
+    .story-block .i-want { color: #68d391; }
+    .story-block .so     { color: #f6ad55; }
+    .story-line { margin-bottom: 0.4rem; }
+    .story-line:last-child { margin-bottom: 0; }
+
+    /* ── Acceptance Criteria ── */
+    .ac-list { list-style: none; }
+    .ac-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid #1e2535;
+      font-size: 0.83rem;
+    }
+    .ac-list li:last-child { border-bottom: none; }
+    .ac-num {
+      font-size: 0.68rem;
+      font-weight: 700;
+      min-width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .ac-num.create { background: #1a4731; color: #68d391; }
+    .ac-num.read   { background: #1a365d; color: #63b3ed; }
+    .ac-num.update { background: #322659; color: #b794f4; }
+    .ac-num.delete { background: #4a1111; color: #fc8181; }
+
+    /* ── CRUD Detail tabs ── */
+    .crud-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 900px) { .crud-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px) { .crud-grid { grid-template-columns: 1fr; } }
+
+    .crud-card {
+      background: #111520;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .crud-header {
+      padding: 0.65rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .crud-header.create { background: #1a4731; color: #68d391; }
+    .crud-header.read   { background: #1a365d; color: #63b3ed; }
+    .crud-header.update { background: #322659; color: #b794f4; }
+    .crud-header.delete { background: #4a1111; color: #fc8181; }
+
+    .crud-body { padding: 1rem; }
+    .crud-row { margin-bottom: 0.9rem; }
+    .crud-row:last-child { margin-bottom: 0; }
+    .crud-row .f-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4a5568;
+      margin-bottom: 0.25rem;
+    }
+    .crud-row p { font-size: 0.78rem; color: #a0aec0; }
+    .crud-row code {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.72rem;
+      color: #b794f4;
+      background: #1a1f2e;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+    }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem; }
+    .field-tag {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.68rem;
+      background: #1a1f2e;
+      border: 1px solid #374151;
+      color: #a0aec0;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+    .field-tag.required { border-color: #276749; color: #68d391; }
+
+    /* ── API Contract ── */
+    .endpoint-block {
+      background: #111520;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .endpoint-block:last-child { margin-bottom: 0; }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.25rem;
+      background: #0f1117;
+      border-bottom: 1px solid #2d3748;
+      cursor: pointer;
+      user-select: none;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .badge-get    { background: #1a365d; color: #63b3ed; }
+    .badge-post   { background: #1a4731; color: #68d391; }
+    .badge-put    { background: #322659; color: #b794f4; }
+    .badge-delete { background: #4a1111; color: #fc8181; }
+
+    .endpoint-path {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: #e2e8f0;
+    }
+    .endpoint-desc { font-size: 0.78rem; color: #4a5568; margin-left: auto; }
+
+    .endpoint-body { padding: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .endpoint-body { grid-template-columns: 1fr; } }
+
+    .code-block-wrap .code-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4a5568;
+      margin-bottom: 0.4rem;
+    }
+    pre {
+      background: #0a0d14;
+      border: 1px solid #1e2535;
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.75rem;
+      color: #a0aec0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .status-codes { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+    .status {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      border: 1px solid;
+    }
+    .status-2xx { background: #1a4731; border-color: #276749; color: #68d391; }
+    .status-4xx { background: #4a1111; border-color: #742a2a; color: #fc8181; }
+
+    /* ── Edge Cases ── */
+    .edge-list { list-style: none; }
+    .edge-list li {
+      display: flex;
+      gap: 1rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #1e2535;
+      font-size: 0.83rem;
+    }
+    .edge-list li:last-child { border-bottom: none; }
+    .edge-icon {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: #322659;
+      color: #b794f4;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .edge-list li strong { color: #b794f4; }
+    .edge-list li span  { color: #718096; }
+
+    /* ── Test Scenarios ── */
+    .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 800px) { .test-grid { grid-template-columns: 1fr; } }
+
+    .test-card {
+      background: #111520;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .test-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 1rem;
+      background: #0f1117;
+      border-bottom: 1px solid #1e2535;
+    }
+    .test-id {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #4a5568;
+    }
+    .test-title { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; }
+    .test-body { padding: 1rem; }
+    .test-row { margin-bottom: 0.75rem; }
+    .test-row:last-child { margin-bottom: 0; }
+    .test-label {
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .test-label.input    { color: #63b3ed; }
+    .test-label.expected { color: #68d391; }
+    .test-row p { font-size: 0.78rem; color: #a0aec0; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.75rem;
+      color: #2d3748;
+      border-top: 1px solid #1e2535;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Spring Music &nbsp;·&nbsp; Business Capability</div>
+  <h1>Album Catalog Management</h1>
+  <p>CRUD specification grounded in the existing <code>/albums</code> API and Album domain</p>
+</header>
+
+<nav class="toc">
+  <a href="#s1">1 · Capability</a>
+  <a href="#s2">2 · User Story</a>
+  <a href="#s3">3 · Acceptance Criteria</a>
+  <a href="#s4">4 · CRUD Details</a>
+  <a href="#s5">5 · API Contract</a>
+  <a href="#s6">6 · Edge Cases</a>
+  <a href="#s7">7 · Test Scenarios</a>
+</nav>
+
+<main>
+
+  <!-- ── 1. Business Capability ── -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Business Capability</h2>
+      <span class="tag" style="background:#1a365d;color:#63b3ed;">PM</span>
+    </div>
+    <div class="capability-grid">
+      <div class="cap-card">
+        <div class="cap-label">Name</div>
+        <div class="cap-value">Album Catalog Management</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-label">Description</div>
+        <div class="cap-desc">Maintain an authoritative catalog of music albums, allowing staff to add new releases, correct metadata, retrieve album details, and remove discontinued or erroneous entries — all against the existing <code>/albums</code> API.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. User Story ── -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>User Story</h2>
+      <span class="tag" style="background:#1a4731;color:#68d391;">Story</span>
+    </div>
+    <div class="card">
+      <div class="story-block">
+        <div class="story-line"><span class="as-a">As a</span> catalog administrator,</div>
+        <div class="story-line"><span class="i-want">I want to</span> create, view, update, and delete album records,</div>
+        <div class="story-line"><span class="so">So that</span> the music catalog remains accurate, complete, and free of stale or incorrect entries.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. Acceptance Criteria ── -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Acceptance Criteria</h2>
+      <span class="tag" style="background:#322659;color:#b794f4;">10 criteria</span>
+    </div>
+    <div class="card">
+      <ul class="ac-list">
+        <li><div class="ac-num create">C</div>A new album is saved and returned with a system-generated UUID <code>id</code> when all required fields are provided.</li>
+        <li><div class="ac-num create">C</div>A create request missing <code>title</code> returns HTTP 400 and does not persist a record.</li>
+        <li><div class="ac-num read">R</div><code>GET /albums</code> returns all albums currently in the catalog as a JSON array.</li>
+        <li><div class="ac-num read">R</div><code>GET /albums/{id}</code> with a valid existing <code>id</code> returns the exact album record for that <code>id</code>.</li>
+        <li><div class="ac-num read">R</div><code>GET /albums/{id}</code> with a non-existent <code>id</code> returns HTTP 404.</li>
+        <li><div class="ac-num update">U</div>A <code>POST /albums</code> request with a valid <code>id</code> and changed <code>artist</code> returns the updated record reflecting the new value.</li>
+        <li><div class="ac-num update">U</div>A <code>POST /albums</code> request with an <code>id</code> that does not exist returns HTTP 404.</li>
+        <li><div class="ac-num delete">D</div><code>DELETE /albums/{id}</code> for an existing album returns HTTP 204 and the record is no longer returned by <code>GET /albums</code>.</li>
+        <li><div class="ac-num delete">D</div><code>DELETE /albums/{id}</code> for a non-existent <code>id</code> returns HTTP 404.</li>
+        <li><div class="ac-num read">R</div><code>GET /albums</code> returns an empty array <code>[]</code> when the catalog contains no records.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 4. CRUD Details ── -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>CRUD Details</h2>
+      <span class="tag" style="background:#1a1f2e;color:#4a5568;">Dev</span>
+    </div>
+    <div class="crud-grid">
+
+      <!-- Create -->
+      <div class="crud-card">
+        <div class="crud-header create">Create</div>
+        <div class="crud-body">
+          <div class="crud-row">
+            <div class="f-label">Purpose</div>
+            <p>Add a new album record to the catalog.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Inputs</div>
+            <div class="tag-list">
+              <span class="field-tag required">title *</span>
+              <span class="field-tag required">artist *</span>
+              <span class="field-tag">releaseYear</span>
+              <span class="field-tag">genre</span>
+              <span class="field-tag">trackCount</span>
+              <span class="field-tag">albumId</span>
+            </div>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Validation</div>
+            <p><code>title</code> non-null &amp; non-blank · <code>trackCount</code> ≥ 0 if provided · <code>releaseYear</code> 4-digit numeric string if provided</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Expected Behavior</div>
+            <p>Persists album; generates UUID <code>id</code>; returns full saved object.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Error Conditions</div>
+            <p>Missing <code>title</code> → 400 · Malformed JSON → 400</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Read -->
+      <div class="crud-card">
+        <div class="crud-header read">Read</div>
+        <div class="crud-body">
+          <div class="crud-row">
+            <div class="f-label">Purpose</div>
+            <p>Retrieve one album by <code>id</code>, or the full catalog.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Inputs</div>
+            <div class="tag-list">
+              <span class="field-tag">id (path, single)</span>
+              <span class="field-tag">— (list)</span>
+            </div>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Validation</div>
+            <p><code>id</code> must be a non-empty string.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Expected Behavior</div>
+            <p>Single: matching Album JSON. List: array of all albums, <code>[]</code> if none.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Error Conditions</div>
+            <p><code>id</code> not found → 404 · Blank or malformed <code>id</code> → 404</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update -->
+      <div class="crud-card">
+        <div class="crud-header update">Update</div>
+        <div class="crud-body">
+          <div class="crud-row">
+            <div class="f-label">Purpose</div>
+            <p>Correct or enrich metadata on an existing album.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Inputs</div>
+            <div class="tag-list">
+              <span class="field-tag required">id *</span>
+              <span class="field-tag">title</span>
+              <span class="field-tag">artist</span>
+              <span class="field-tag">releaseYear</span>
+              <span class="field-tag">genre</span>
+              <span class="field-tag">trackCount</span>
+              <span class="field-tag">albumId</span>
+            </div>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Validation</div>
+            <p><code>id</code> must exist · <code>title</code> non-blank · <code>trackCount</code> ≥ 0 if provided</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Expected Behavior</div>
+            <p>Overwrites stored record with supplied values; returns updated Album object.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Error Conditions</div>
+            <p><code>id</code> not found → 404 · Blank <code>title</code> → 400 · Missing <code>id</code> in body → 400</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete -->
+      <div class="crud-card">
+        <div class="crud-header delete">Delete</div>
+        <div class="crud-body">
+          <div class="crud-row">
+            <div class="f-label">Purpose</div>
+            <p>Remove a discontinued or erroneous album from the catalog.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Inputs</div>
+            <div class="tag-list">
+              <span class="field-tag required">id (path) *</span>
+            </div>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Validation</div>
+            <p><code>id</code> must be a non-empty string matching an existing record.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Expected Behavior</div>
+            <p>Removes record permanently; returns 204 no body; subsequent GET returns 404.</p>
+          </div>
+          <div class="crud-row">
+            <div class="f-label">Error Conditions</div>
+            <p><code>id</code> not found → 404</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── 5. API Contract ── -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>API Contract</h2>
+      <span class="tag" style="background:#1a1f2e;color:#4a5568;">5 endpoints</span>
+    </div>
+
+    <!-- GET /albums -->
+    <div class="endpoint-block">
+      <div class="endpoint-header">
+        <span class="badge badge-get">GET</span>
+        <span class="endpoint-path">/albums</span>
+        <span class="endpoint-desc">List all albums</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block-wrap">
+          <div class="code-label">Request</div>
+          <pre>GET /albums
+(no body)</pre>
+        </div>
+        <div class="code-block-wrap">
+          <div class="code-label">Response</div>
+          <pre>[
+  {
+    "id": "a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8",
+    "title": "Kind of Blue",
+    "artist": "Miles Davis",
+    "releaseYear": "1959",
+    "genre": "Jazz",
+    "trackCount": 5,
+    "albumId": null
+  },
+  {
+    "id": "c9d1e2f3-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+    "title": "Rumours",
+    "artist": "Fleetwood Mac",
+    "releaseYear": "1977",
+    "genre": "Rock",
+    "trackCount": 11,
+    "albumId": null
+  }
+]</pre>
+          <div class="status-codes">
+            <span class="status status-2xx">200 OK</span>
+            <span class="status status-2xx">200 OK — [] (empty catalog)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET /albums/{id} -->
+    <div class="endpoint-block">
+      <div class="endpoint-header">
+        <span class="badge badge-get">GET</span>
+        <span class="endpoint-path">/albums/{id}</span>
+        <span class="endpoint-desc">Get single album</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block-wrap">
+          <div class="code-label">Request</div>
+          <pre>GET /albums/a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8
+(no body)</pre>
+        </div>
+        <div class="code-block-wrap">
+          <div class="code-label">Response</div>
+          <pre>{
+  "id": "a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8",
+  "title": "Kind of Blue",
+  "artist": "Miles Davis",
+  "releaseYear": "1959",
+  "genre": "Jazz",
+  "trackCount": 5,
+  "albumId": null
+}</pre>
+          <div class="status-codes">
+            <span class="status status-2xx">200 OK</span>
+            <span class="status status-4xx">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUT /albums -->
+    <div class="endpoint-block">
+      <div class="endpoint-header">
+        <span class="badge badge-put">PUT</span>
+        <span class="endpoint-path">/albums</span>
+        <span class="endpoint-desc">Create album</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block-wrap">
+          <div class="code-label">Request</div>
+          <pre>PUT /albums
+Content-Type: application/json
+
+{
+  "title": "Kind of Blue",
+  "artist": "Miles Davis",
+  "releaseYear": "1959",
+  "genre": "Jazz",
+  "trackCount": 5
+}</pre>
+        </div>
+        <div class="code-block-wrap">
+          <div class="code-label">Response</div>
+          <pre>{
+  "id": "a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8",
+  "title": "Kind of Blue",
+  "artist": "Miles Davis",
+  "releaseYear": "1959",
+  "genre": "Jazz",
+  "trackCount": 5,
+  "albumId": null
+}</pre>
+          <div class="status-codes">
+            <span class="status status-2xx">200 OK</span>
+            <span class="status status-4xx">400 Bad Request</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST /albums -->
+    <div class="endpoint-block">
+      <div class="endpoint-header">
+        <span class="badge badge-post">POST</span>
+        <span class="endpoint-path">/albums</span>
+        <span class="endpoint-desc">Update album</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block-wrap">
+          <div class="code-label">Request</div>
+          <pre>POST /albums
+Content-Type: application/json
+
+{
+  "id": "a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8",
+  "title": "Kind of Blue",
+  "artist": "Miles Davis",
+  "releaseYear": "1959",
+  "genre": "Jazz",
+  "trackCount": 6
+}</pre>
+        </div>
+        <div class="code-block-wrap">
+          <div class="code-label">Response</div>
+          <pre>{
+  "id": "a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8",
+  "title": "Kind of Blue",
+  "artist": "Miles Davis",
+  "releaseYear": "1959",
+  "genre": "Jazz",
+  "trackCount": 6,
+  "albumId": null
+}</pre>
+          <div class="status-codes">
+            <span class="status status-2xx">200 OK</span>
+            <span class="status status-4xx">400 Bad Request</span>
+            <span class="status status-4xx">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DELETE /albums/{id} -->
+    <div class="endpoint-block">
+      <div class="endpoint-header">
+        <span class="badge badge-delete">DELETE</span>
+        <span class="endpoint-path">/albums/{id}</span>
+        <span class="endpoint-desc">Delete album</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block-wrap">
+          <div class="code-label">Request</div>
+          <pre>DELETE /albums/a3f2c1b4-9e7d-4f6a-b1c2-d3e4f5a6b7c8
+(no body)</pre>
+        </div>
+        <div class="code-block-wrap">
+          <div class="code-label">Response</div>
+          <pre>HTTP 204 No Content
+(empty body)</pre>
+          <div class="status-codes">
+            <span class="status status-2xx">204 No Content</span>
+            <span class="status status-4xx">404 Not Found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── 6. Edge Cases ── -->
+  <section id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Edge Cases</h2>
+      <span class="tag" style="background:#322659;color:#b794f4;">7 cases</span>
+    </div>
+    <div class="card">
+      <ul class="edge-list">
+        <li>
+          <div class="edge-icon">1</div>
+          <div><strong>Create with trackCount: 0</strong> — <span>Zero is a valid integer; record must be persisted with <code>trackCount: 0</code>, not rejected.</span></div>
+        </li>
+        <li>
+          <div class="edge-icon">2</div>
+          <div><strong>Update changes only one field</strong> — <span>Body contains <code>id</code> and only <code>genre</code> changed; all other fields must be preserved exactly, not nulled out.</span></div>
+        </li>
+        <li>
+          <div class="edge-icon">3</div>
+          <div><strong>Create with releaseYear in the future</strong> — <span>e.g. <code>"2099"</code>; the API has no range constraint on year, so it must be accepted and stored as-is.</span></div>
+        </li>
+        <li>
+          <div class="edge-icon">4</div>
+          <div><strong>Delete then GET</strong> — <span><code>DELETE /albums/{id}</code> succeeds (204), then <code>GET /albums/{id}</code> must return 404, not a stale cached response.</span></div>
+        </li>
+        <li>
+          <div class="edge-icon">5</div>
+          <div><strong>Duplicate create</strong> — <span><code>PUT /albums</code> sent twice with identical field values (no <code>id</code> in body); two distinct records with different generated UUIDs must be created.</span></div>
+        </li>
+        <li>
+          <div class="edge-icon">6</div>
+          <div><strong>Update with unknown ID</strong> — <span><code>POST /albums</code> with a well-formed UUID never created; must return 404, not silently insert a new record.</span></div>
+        </li>
+        <li>
+          <div class="edge-icon">7</div>
+          <div><strong>GET /albums after all records deleted</strong> — <span>Must return <code>[]</code> with HTTP 200, not 404.</span></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 7. Test Scenarios ── -->
+  <section id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Test Scenarios</h2>
+      <span class="tag" style="background:#1a4731;color:#68d391;">8 cases</span>
+    </div>
+    <div class="test-grid">
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-01</span>
+          <span class="badge badge-put">PUT</span>
+          <span class="test-title">Create valid album</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>PUT /albums</code> with <code>{ "title": "Rumours", "artist": "Fleetwood Mac", "releaseYear": "1977", "genre": "Rock", "trackCount": 11 }</code></p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>200 OK</code> · response body contains all input fields plus a non-null <code>id</code> (UUID format)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-02</span>
+          <span class="badge badge-put">PUT</span>
+          <span class="test-title">Create — missing title</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>PUT /albums</code> with <code>{ "artist": "Fleetwood Mac", "releaseYear": "1977", "genre": "Rock", "trackCount": 11 }</code></p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>400 Bad Request</code> · no record persisted · <code>GET /albums</code> count unchanged</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-03</span>
+          <span class="badge badge-get">GET</span>
+          <span class="test-title">Read existing album by ID</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>GET /albums/{id}</code> using the <code>id</code> returned from TC-01</p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>200 OK</code> · body matches the record created in TC-01 exactly</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-04</span>
+          <span class="badge badge-get">GET</span>
+          <span class="test-title">Read non-existent album</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>GET /albums/00000000-0000-0000-0000-000000000000</code></p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>404 Not Found</code></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-05</span>
+          <span class="badge badge-post">POST</span>
+          <span class="test-title">Update album artist</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>POST /albums</code> with full album body from TC-01, <code>artist</code> changed to <code>"Fleetwood Mac (Reissue)"</code></p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>200 OK</code> · <code>artist</code> is <code>"Fleetwood Mac (Reissue)"</code> · all other fields unchanged · <code>GET /albums/{id}</code> reflects same change</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-06</span>
+          <span class="badge badge-post">POST</span>
+          <span class="test-title">Update with unknown ID</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>POST /albums</code> with <code>{ "id": "00000000-0000-0000-0000-000000000000", "title": "Ghost Album", "artist": "Nobody", "releaseYear": "2000", "genre": "Pop", "trackCount": 1 }</code></p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>404 Not Found</code> · catalog unchanged</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-07</span>
+          <span class="badge badge-delete">DELETE</span>
+          <span class="test-title">Delete existing album</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p><code>DELETE /albums/{id}</code> using the <code>id</code> from TC-01</p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>204 No Content</code> · subsequent <code>GET /albums/{id}</code> returns 404 · album absent from <code>GET /albums</code></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card">
+        <div class="test-header">
+          <span class="test-id">TC-08</span>
+          <span class="badge badge-get">GET</span>
+          <span class="test-title">List reflects all mutations</span>
+        </div>
+        <div class="test-body">
+          <div class="test-row">
+            <div class="test-label input">Input</div>
+            <p>Sequence: create album A → create album B → delete album A → <code>GET /albums</code></p>
+          </div>
+          <div class="test-row">
+            <div class="test-label expected">Expected Output</div>
+            <p><code>200 OK</code> · array contains exactly album B · album A is absent</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Spring Music &nbsp;·&nbsp; Album Catalog Management &nbsp;·&nbsp; Business Capability Specification &nbsp;·&nbsp; 2026-03-23
+</footer>
+
+</body>
+</html>
